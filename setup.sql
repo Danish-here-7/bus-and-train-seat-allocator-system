@@ -50,4 +50,20 @@ INSERT INTO Vehicles (number, type, capacity)
 VALUES
 ('DL23CS45', 'Bus', 50),
 ('MH3C344', 'Train', 150);
+INSERT INTO Schedules (vehicle_id, route_id, departure_time, arrival_time, schedule_date)
+VALUES
+(1, 1, '08:00:00', '14:00:00', '2025-04-15'),
+(2, 2, '09:00:00', '16:00:00', '2025-04-16');
+
+-- Optional: Adding some example data for Passengers
+INSERT INTO Passengers (name, contact)
+VALUES
+('MOHAN', '1234567890'),
+('SHAM', '0987654321');
+
+-- Optional: Adding some example data for Bookings
+INSERT INTO Bookings (passenger_id, schedule_id, seat_number)
+VALUES
+(1, 1, 12),
+(2, 2, 34);
 
