@@ -3,7 +3,7 @@ import sqlite3
 def execute_sql_script(file_path):
     try:
         # Connect to SQLite database (it will create the file if it doesn't exist)
-        conn = sqlite3.connect('allocateit.db')
+        conn = sqlite3.connect('ALLOCATEIT.db')
         cursor = conn.cursor()
 
         # Open the SQL script file
