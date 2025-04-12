@@ -46,4 +46,8 @@ INSERT INTO Routes (source, destination, stops)
 VALUES
 ('DELHI', 'MUMBAI', 'SURAT, PUNE'),
 ('DELHI', 'BANGALORE', 'HUBLI, BELGAVI');
+INSERT INTO Vehicles (number, type, capacity)
+VALUES
+('DL23CS45', 'Bus', 50),
+('MH3C344', 'Train', 150);
 
