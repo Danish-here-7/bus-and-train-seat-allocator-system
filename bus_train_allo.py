@@ -1,4 +1,6 @@
 from init_db import execute_sql_script
+
+# Initialize the database by running the SQL script
 execute_sql_script('setup.sql')
 
 import streamlit as st
