@@ -1,46 +1,48 @@
-from init_db import execute_sql_script
-
-# Initialize the database by running the SQL script
-execute_sql_script('setup.sql')
 
 import streamlit as st
-import sqlite3
+import mysql.connector
 from datetime import datetime
 
+# ---------------- DB Connection ---------------- #
 def get_connection():
-    return sqlite3.connect("ALLOCATEIT.db")  # SQLite database file
-get_connection()
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="system",  # Replace with your password
+        database="ALLOCATEIT"  # Changed database name
+    )
 
-# CSS & Page Config
-st.set_page_config(page_title="BUS AND TRAIN ALLOCATION SYSTEM", layout="wide")
+st.set_page_config(page_title="BUS AND TRAIN ALLOCATION SYSTEM", layout="wide")# css
 st.markdown("""
     <style>
+
     .stApp {
-        background: linear-gradient(to right, #fcb603, #feb47b);
-    }
+            background: linear-gradient(to right, #fcb603, #feb47b);
+     }
     h2, .stHeader {
-        color:#fc14f1 ; text-align: center; font-weight:800;
-    }
+            color:#fc14f1 ; text-align: center; font-weight:800;
+            }
     .stButton>button {
-        background-color: #ff6600; color: white; border-radius: 100px; padding: 10px 20px;
-    }
+            background-color: #ff6600; color: white; border-radius: 100px; padding: 10px 20px;
+            }
     .stButton>button:hover {
-        background-color: #28b7d4;
-    }
+            background-color: #28b7d4;
+            }
     .stTextInput input {
-        border: 2px solid #2fbceb; border-radius: 5px; padding: 10px;
-    }
+            border: 2px solid #2fbceb; border-radius: 5px; padding: 10px;
+            }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<h2>🚌 BUS AND TRAIN SET ALLOCATION SYSTEM</h2>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; font-size: 14px; font-style: italic;'>BY:Danish,Christy,Dhanush,Chiranth</h3>", unsafe_allow_html=True)
 
-# Role selection
+
+# ---------------- Role Selection ---------------- #
 role = st.selectbox("Sign in as", ["Select", "Admin", "Staff", "Passenger"])
 st.write("---")
 
-# Admin Panel
+# ---------------- Admin Panel ---------------- #
 def admin_panel():
     st.subheader("🧑‍💼 Admin Dashboard")
     menu = st.selectbox("Admin Options", ["Add Vehicle", "Add Route", "Delete Route", "Assign Schedule", "View Vehicles", "View Routes", "View Schedules", "View Bookings"])
@@ -53,7 +55,7 @@ def admin_panel():
         if st.button("Add Vehicle"):
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO Vehicles (number, type, capacity) VALUES (?, ?, ?)", (vehicle_number, vehicle_type, capacity))
+            cursor.execute("INSERT INTO Vehicles (number, type, capacity) VALUES (%s, %s, %s)", (vehicle_number, vehicle_type, capacity))
             conn.commit()
             conn.close()
             st.success("Vehicle added successfully")
@@ -66,7 +68,7 @@ def admin_panel():
         if st.button("Add Route"):
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO Routes (source, destination, stops) VALUES (?, ?, ?)", (source, destination, stops))
+            cursor.execute("INSERT INTO Routes (source, destination, stops) VALUES (%s, %s, %s)", (source, destination, stops))
             conn.commit()
             conn.close()
             st.success("Route added successfully")
@@ -76,17 +78,13 @@ def admin_panel():
         cursor = conn.cursor()
         cursor.execute("SELECT id, source, destination FROM Routes")
         routes = cursor.fetchall()
-        conn.close()
-        if routes:
-            route_to_delete = st.selectbox("Select Route to Delete", [f"{r[0]} - {r[1]} to {r[2]}" for r in routes])
-            if st.button("Delete Route"):
-                route_id = int(route_to_delete.split(" - ")[0])
-                conn = get_connection()
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM Routes WHERE id = ?", (route_id,))
-                conn.commit()
-                conn.close()
-                st.success("Route deleted successfully")
+        route_to_delete = st.selectbox("Select Route to Delete", [f"{r[0]} - {r[1]} to {r[2]}" for r in routes])
+        if st.button("Delete Route"):
+            route_id = int(route_to_delete.split(" - ")[0])
+            cursor.execute("DELETE FROM Routes WHERE id = %s", (route_id,))
+            conn.commit()
+            conn.close()
+            st.success("Route deleted successfully")
 
     elif menu == "Assign Schedule":
         conn = get_connection()
@@ -105,8 +103,8 @@ def admin_panel():
         if st.button("Assign Schedule"):
             v_id = int(vehicle_option.split(" - ")[0])
             r_id = int(route_option.split(" - ")[0])
-            cursor.execute("INSERT INTO Schedules (vehicle_id, route_id, departure_time, arrival_time, schedule_date) VALUES (?, ?, ?, ?, ?)",
-                           (v_id, r_id, str(departure_time), str(arrival_time), str(schedule_date)))
+            cursor.execute("INSERT INTO Schedules (vehicle_id, route_id, departure_time, arrival_time, schedule_date) VALUES (%s, %s, %s, %s, %s)",
+                           (v_id, r_id, departure_time, arrival_time, schedule_date))
             conn.commit()
             conn.close()
             st.success("Schedule assigned successfully")
@@ -130,12 +128,7 @@ def admin_panel():
     elif menu == "View Schedules":
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.arrival_time, s.schedule_date 
-            FROM Schedules s 
-            JOIN Vehicles v ON s.vehicle_id = v.id 
-            JOIN Routes r ON s.route_id = r.id
-        """)
+        cursor.execute("SELECT s.id, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i'), TIME_FORMAT(s.arrival_time, '%H:%i'), s.schedule_date FROM Schedules s JOIN Vehicles v ON s.vehicle_id = v.id JOIN Routes r ON s.route_id = r.id")
         rows = cursor.fetchall()
         st.table(rows)
         conn.close()
@@ -143,49 +136,41 @@ def admin_panel():
     elif menu == "View Bookings":
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT b.id, p.name, v.number, r.source, r.destination, s.departure_time, b.seat_number
-            FROM Bookings b
-            JOIN Passengers p ON b.passenger_id = p.id
-            JOIN Schedules s ON b.schedule_id = s.id
-            JOIN Vehicles v ON s.vehicle_id = v.id
-            JOIN Routes r ON s.route_id = r.id
-        """)
+        cursor.execute("SELECT b.id, p.name, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i') AS departure_time, b.seat_number "
+                       "FROM Bookings b "
+                       "JOIN Passengers p ON b.passenger_id = p.id "
+                       "JOIN Schedules s ON b.schedule_id = s.id "
+                       "JOIN Vehicles v ON s.vehicle_id = v.id "
+                       "JOIN Routes r ON s.route_id = r.id")
         bookings = cursor.fetchall()
         st.table(bookings)
         conn.close()
 
-# Staff Panel
+# ---------------- Staff Panel ---------------- #
 def staff_panel():
     st.subheader("🛠️ Staff Dashboard")
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.arrival_time, s.schedule_date 
-        FROM Schedules s 
-        JOIN Vehicles v ON s.vehicle_id = v.id 
-        JOIN Routes r ON s.route_id = r.id
-    """)
+    cursor.execute("SELECT s.id, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i'), TIME_FORMAT(s.arrival_time, '%H:%i'), s.schedule_date FROM Schedules s JOIN Vehicles v ON s.vehicle_id = v.id JOIN Routes r ON s.route_id = r.id")
     rows = cursor.fetchall()
     st.table(rows)
     conn.close()
 
+    # View Bookings for Staff
     if st.button("View Bookings"):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT b.id, p.name, v.number, r.source, r.destination, s.departure_time, b.seat_number 
-            FROM Bookings b 
-            JOIN Passengers p ON b.passenger_id = p.id 
-            JOIN Schedules s ON b.schedule_id = s.id 
-            JOIN Vehicles v ON s.vehicle_id = v.id 
-            JOIN Routes r ON s.route_id = r.id
-        """)
+        cursor.execute("SELECT b.id, p.name, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i') AS departure_time, b.seat_number "
+                       "FROM Bookings b "
+                       "JOIN Passengers p ON b.passenger_id = p.id "
+                       "JOIN Schedules s ON b.schedule_id = s.id "
+                       "JOIN Vehicles v ON s.vehicle_id = v.id "
+                       "JOIN Routes r ON s.route_id = r.id")
         bookings = cursor.fetchall()
         st.table(bookings)
         conn.close()
 
-# Passenger Panel
+# ---------------- Passenger Panel ---------------- #
 def passenger_panel():
     st.subheader("👤 Passenger Dashboard")
     name = st.text_input("Your Name")
@@ -194,9 +179,9 @@ def passenger_panel():
     if st.button("Register"):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Passengers (name, contact) VALUES (?, ?)", (name, contact))
+        cursor.execute("INSERT INTO Passengers (name, contact) VALUES (%s, %s)", (name, contact))
         conn.commit()
-        passenger_id = cursor.lastrowid
+        passenger_id = cursor.lastrowid  # Get the auto-generated ID
         conn.close()
         st.success(f"Registered successfully! Your Passenger ID is {passenger_id}")
 
@@ -204,12 +189,7 @@ def passenger_panel():
     st.markdown("### Book Ticket")
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.schedule_date 
-        FROM Schedules s 
-        JOIN Vehicles v ON s.vehicle_id = v.id 
-        JOIN Routes r ON s.route_id = r.id
-    """)
+    cursor.execute("SELECT s.id, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i'), s.schedule_date FROM Schedules s JOIN Vehicles v ON s.vehicle_id = v.id JOIN Routes r ON s.route_id = r.id")
     schedules = cursor.fetchall()
     conn.close()
 
@@ -221,28 +201,27 @@ def passenger_panel():
         schedule_id = int(schedule.split(" - ")[0])
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Bookings (passenger_id, schedule_id, seat_number) VALUES (?, ?, ?)", (passenger_id, schedule_id, seat_number))
+        cursor.execute("INSERT INTO Bookings (passenger_id, schedule_id, seat_number) VALUES (%s, %s, %s)", (passenger_id, schedule_id, seat_number))
         conn.commit()
         conn.close()
         st.success("Ticket booked successfully")
 
+    # View Bookings for Passenger
     if st.button("View My Bookings"):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT b.id, v.number, r.source, r.destination, s.departure_time, b.seat_number 
-            FROM Bookings b 
-            JOIN Passengers p ON b.passenger_id = p.id 
-            JOIN Schedules s ON b.schedule_id = s.id 
-            JOIN Vehicles v ON s.vehicle_id = v.id 
-            JOIN Routes r ON s.route_id = r.id 
-            WHERE p.id = ?
-        """, (passenger_id,))
+        cursor.execute("SELECT b.id, v.number, r.source, r.destination, TIME_FORMAT(s.departure_time, '%H:%i') AS departure_time, b.seat_number "
+                       "FROM Bookings b "
+                       "JOIN Passengers p ON b.passenger_id = p.id "
+                       "JOIN Schedules s ON b.schedule_id = s.id "
+                       "JOIN Vehicles v ON s.vehicle_id = v.id "
+                       "JOIN Routes r ON s.route_id = r.id "
+                       "WHERE p.id = %s", (passenger_id,))
         bookings = cursor.fetchall()
         st.table(bookings)
         conn.close()
 
-# Main Role Handling
+# ---------------- Role Handling ---------------- #
 if role == "Admin":
     admin_panel()
 elif role == "Staff":
