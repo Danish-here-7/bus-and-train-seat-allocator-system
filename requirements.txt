@@ -1,2 +1,6 @@
 streamlit
-sqlite3
+pandas
+numpy
+matplotlib
+scikit-learn
+mysql-connector-python
