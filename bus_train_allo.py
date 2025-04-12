@@ -1,7 +1,7 @@
 import streamlit as st
 import mysql.connector
 from datetime import datetim
-def get_connection()
+def get_connection():
     return mysql.connector.connect(
         host="localhost",
         user="root",
