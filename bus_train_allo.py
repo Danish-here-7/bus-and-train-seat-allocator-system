@@ -1,14 +1,12 @@
 import streamlit as st
 import mysql.connector
-from datetime import datetime
-
-# ---------------- DB Connection ---------------- #
-def get_connection():
+from datetime import datetim
+def get_connection()
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="system",  # Replace with your password
-        database="ALLOCATEIT"  # Changed database name
+        password="system",  
+        database="ALLOCATEIT"  #
     )
 
 st.set_page_config(page_title="BUS AND TRAIN ALLOCATION SYSTEM", layout="wide")# css
