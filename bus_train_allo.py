@@ -1,6 +1,6 @@
 import streamlit as st
 import mysql.connector
-from datetime import datetim
+from datetime import datetime
 def get_connection():
     return mysql.connector.connect(
         host="localhost",
