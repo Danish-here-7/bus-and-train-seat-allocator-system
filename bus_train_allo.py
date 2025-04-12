@@ -4,6 +4,7 @@ from datetime import datetime
 
 def get_connection():
     return sqlite3.connect("ALLOCATEIT.db")  # SQLite database file
+get_connection()
 
 # CSS & Page Config
 st.set_page_config(page_title="BUS AND TRAIN ALLOCATION SYSTEM", layout="wide")
