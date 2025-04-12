@@ -57,9 +57,30 @@ def create_tables():
 create_tables()
 
 # ---------------- Streamlit UI ---------------- #
-st.set_page_config(page_title="Bus and Train Allocation", layout="wide")
+st.set_page_config(page_title="BUS AND TRAIN SEAT ALLOCATION", layout="wide")# css
+st.markdown("""
+    <style>
 
-st.markdown("<h2 style='text-align:center;'>🚌 Bus and Train Allocation System</h2>", unsafe_allow_html=True)
+    .stApp {
+            background: linear-gradient(to right, #ffd103, #17ceeb);
+     }
+    h2, .stHeader {
+            color:#81cf34 ; text-align: center; font-weight:800;
+            }
+    .stButton>button {
+            background-color: #ff6600; color: white; border-radius: 100px; padding: 10px 20px;
+            }
+    .stButton>button:hover {
+            background-color: #28b7d4;
+            }
+    .stTextInput input {
+            border: 2px solid #e01fcd; border-radius: 5px; padding: 10px;
+            }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<h2>BUS AND TRAIN SEAT ALLOCATION SYSTEM</h2>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; font-size: 14px; font-style: italic;'>by: DANIH,CHRISTY,DHANUSH,CHIRANTH</h3>", unsafe_allow_html=True)
 role = st.selectbox("Login as", ["Select", "Admin", "Staff", "Passenger"])
 st.write("---")
 
@@ -111,17 +132,17 @@ def admin_panel():
 
     elif menu == "View Bookings":
         cursor.execute("""SELECT b.id, p.name, v.number, r.source, r.destination, s.schedule_date, s.departure_time, b.seat_number
-                          FROM Bookings b 
-                          JOIN Passengers p ON b.passenger_id = p.id 
-                          JOIN Schedules s ON b.schedule_id = s.id 
-                          JOIN Vehicles v ON s.vehicle_id = v.id 
+                          FROM Bookings b
+                          JOIN Passengers p ON b.passenger_id = p.id
+                          JOIN Schedules s ON b.schedule_id = s.id
+                          JOIN Vehicles v ON s.vehicle_id = v.id
                           JOIN Routes r ON s.route_id = r.id""")
         st.table(cursor.fetchall())
 
     elif menu == "View Schedules":
         cursor.execute("""SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.arrival_time, s.schedule_date
-                          FROM Schedules s 
-                          JOIN Vehicles v ON s.vehicle_id = v.id 
+                          FROM Schedules s
+                          JOIN Vehicles v ON s.vehicle_id = v.id
                           JOIN Routes r ON s.route_id = r.id""")
         st.table(cursor.fetchall())
 
@@ -132,18 +153,18 @@ def staff_panel():
     st.subheader("Staff Dashboard")
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.arrival_time, s.schedule_date 
-                      FROM Schedules s 
-                      JOIN Vehicles v ON s.vehicle_id = v.id 
+    cursor.execute("""SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.arrival_time, s.schedule_date
+                      FROM Schedules s
+                      JOIN Vehicles v ON s.vehicle_id = v.id
                       JOIN Routes r ON s.route_id = r.id""")
     st.table(cursor.fetchall())
 
     if st.button("View Bookings"):
         cursor.execute("""SELECT b.id, p.name, v.number, r.source, r.destination, s.departure_time, b.seat_number
-                          FROM Bookings b 
-                          JOIN Passengers p ON b.passenger_id = p.id 
-                          JOIN Schedules s ON b.schedule_id = s.id 
-                          JOIN Vehicles v ON s.vehicle_id = v.id 
+                          FROM Bookings b
+                          JOIN Passengers p ON b.passenger_id = p.id
+                          JOIN Schedules s ON b.schedule_id = s.id
+                          JOIN Vehicles v ON s.vehicle_id = v.id
                           JOIN Routes r ON s.route_id = r.id""")
         st.table(cursor.fetchall())
     conn.close()
@@ -167,9 +188,9 @@ def passenger_panel():
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.schedule_date 
-                      FROM Schedules s 
-                      JOIN Vehicles v ON s.vehicle_id = v.id 
+    cursor.execute("""SELECT s.id, v.number, r.source, r.destination, s.departure_time, s.schedule_date
+                      FROM Schedules s
+                      JOIN Vehicles v ON s.vehicle_id = v.id
                       JOIN Routes r ON s.route_id = r.id""")
     schedules = cursor.fetchall()
     conn.close()
@@ -192,11 +213,11 @@ def passenger_panel():
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("""SELECT b.id, v.number, r.source, r.destination, s.departure_time, b.seat_number
-                              FROM Bookings b 
-                              JOIN Passengers p ON b.passenger_id = p.id 
-                              JOIN Schedules s ON b.schedule_id = s.id 
-                              JOIN Vehicles v ON s.vehicle_id = v.id 
-                              JOIN Routes r ON s.route_id = r.id 
+                              FROM Bookings b
+                              JOIN Passengers p ON b.passenger_id = p.id
+                              JOIN Schedules s ON b.schedule_id = s.id
+                              JOIN Vehicles v ON s.vehicle_id = v.id
+                              JOIN Routes r ON s.route_id = r.id
                               WHERE p.id = ?""", (pid,))
             st.table(cursor.fetchall())
             conn.close()
