@@ -1,16 +1,14 @@
 import sqlite3
 
-def initialize_database():
-    conn = sqlite3.connect("allocateit.db")
+def execute_sql_script(filename):
+    with open(filename, 'r') as f:
+        sql_script = f.read()
+    conn = sqlite3.connect('allocateit.db')
     cursor = conn.cursor()
-
-    with open("setup.sql", "r") as f:
-        sql = f.read()
-
-    cursor.executescript(sql)
+    cursor.executescript(sql_script)
     conn.commit()
     conn.close()
-    print("✅ Database created and initialized!")
 
-if __name__ == "__main__":
-    initialize_database()
+if __name__ == '__main__':
+    execute_sql_script('setup.sql')
+    print("✅ Database initialized successfully.")
