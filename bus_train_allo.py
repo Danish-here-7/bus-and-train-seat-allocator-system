@@ -1,3 +1,6 @@
+from init_db import execute_sql_script
+execute_sql_script('setup.sql')
+
 import streamlit as st
 import sqlite3
 from datetime import datetime
