@@ -42,3 +42,8 @@ CREATE TABLE IF NOT EXISTS Bookings (
     FOREIGN KEY (passenger_id) REFERENCES Passengers(id),
     FOREIGN KEY (schedule_id) REFERENCES Schedules(id)
 );
+INSERT INTO Routes (source, destination, stops)
+VALUES
+('DELHI', 'MUMBAI', 'SURAT, PUNE'),
+('DELHI', 'BANGALORE', 'HUBLI, BELGAVI');
+
