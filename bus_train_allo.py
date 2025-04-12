@@ -4,7 +4,7 @@ from datetime import datetime, time, date
 
 # ---------------- DB Connection ---------------- #
 def get_connection():
-    return sqlite3.connect("allocateit.db")
+    return sqlite3.connect("ALLOCATEIT.db")
 
 # ---------------- Table Creation ---------------- #
 def create_tables():
